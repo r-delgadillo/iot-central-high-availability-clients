@@ -19,7 +19,7 @@ Coding Azure IoT devices to work with IoT Centrals high availability feature.  E
 
 Ask yourself is your IoT Central device ready for this kind of disaster:
 
-![giant lizard attack](https://github.com/Azure-Samples/iot-central-high-availability-clients/blob/main/assets/disaster.jpg)
+![giant lizard attack](https://github.com/Azure/iot-central-high-availability-clients/blob/main/assets/disaster.jpg)
 
 ## What is this high-availability thing?
 The high availability option in IoT Central allows for an application to have two or more IoT Hubs associated with it in different locations.  This allows for one hub to have a failure and devices will continue to be available and operate against the other IoT Hub.  The magic ingredient in this is the Device Provisioning Service (DPS) that acts as a traffic cop directing your device to the correct IoT Hub to connect and send data to.  Lets look at a failover scenario.
@@ -40,16 +40,16 @@ In this scenario we have an IoT Central application that has two hubs 'A' and 'B
 
 | Folder Name | Azure IoT device SDK                         | Folder Link                                                                         |
 |-------------|----------------------------------------------|-------------------------------------------------------------------------------------|
-|C            |https://github.com/Azure/azure-iot-sdk-c      |https://github.com/Azure-Samples/iot-central-high-availability-clients/tree/main/C     |
-|Node/JavaScript         |https://github.com/Azure/azure-iot-sdk-node   |https://github.com/Azure-Samples/iot-central-high-availability-clients/tree/main/Node/JavaScript  |
-|Node/TypeScript         |https://github.com/Azure/azure-iot-sdk-node   |https://github.com/Azure-Samples/iot-central-high-availability-clients/tree/main/Node/TypeScript  |
-|Python       |https://github.com/Azure/azure-iot-sdk-python |https://github.com/Azure-Samples/iot-central-high-availability-clients/tree/main/Python|
-|CSharp       |https://github.com/Azure/azure-iot-sdk-csharp |https://github.com/Azure-Samples/iot-central-high-availability-clients/tree/main/csharp|
-|Java         |https://github.com/Azure/azure-iot-sdk-java   |https://github.com/Azure-Samples/iot-central-high-availability-clients/tree/main/java  |
+|C            |https://github.com/Azure/azure-iot-sdk-c      |https://github.com/Azure/iot-central-high-availability-clients/tree/main/C     |
+|Node/JavaScript         |https://github.com/Azure/azure-iot-sdk-node   |https://github.com/Azure/iot-central-high-availability-clients/tree/main/Node/JavaScript  |
+|Node/TypeScript         |https://github.com/Azure/azure-iot-sdk-node   |https://github.com/Azure/iot-central-high-availability-clients/tree/main/Node/TypeScript  |
+|Python       |https://github.com/Azure/azure-iot-sdk-python |https://github.com/Azure/iot-central-high-availability-clients/tree/main/Python|
+|CSharp       |https://github.com/Azure/azure-iot-sdk-csharp |https://github.com/Azure/iot-central-high-availability-clients/tree/main/csharp|
+|Java         |https://github.com/Azure/azure-iot-sdk-java   |https://github.com/Azure/iot-central-high-availability-clients/tree/main/java  |
 
 ## Functionality of the client
 
-Each of the samples has the exact same functionality coded using the same IoT Central device template.  The device template can be found in the file [failover.json](https://github.com/Azure-Samples/iot-central-high-availability-clients/blob/main/Failover.json).  This can be imported into your IoT Central application and each of the samples will associate itself with this model by default.
+Each of the samples has the exact same functionality coded using the same IoT Central device template.  The device template can be found in the file [failover.json](https://github.com/Azure/iot-central-high-availability-clients/blob/main/Failover.json).  This can be imported into your IoT Central application and each of the samples will associate itself with this model by default.
 
 The functionality of each sample is:
 
