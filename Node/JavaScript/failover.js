@@ -293,6 +293,9 @@ async function setAlarmCommandHandler(msg) {
 (async () => {
     try {
         console.log('Press Ctrl-C to exit from this when running in the console');
+        console.log('Scope: ' + scopeId);
+        console.log('Key: ' + groupSymmetricKey);
+        console.log('Provisioning Host: ' + provisioningHost);
 
         // connect to IoT Central/Hub via Device Provisioning Service (DPS)
         await connect();
