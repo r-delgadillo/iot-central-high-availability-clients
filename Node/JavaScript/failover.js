@@ -339,7 +339,7 @@ async function setAlarmCommandHandler(msg) {
         } catch (e) {
             console.log(`Error: ${e}`);
         }
-        await setTimeout((resolve, reject) => resolve(), 5000)
+        await setTimeout(() =>{}, 5000)
         exec("sudo systemd-resolve --flush-caches", (err,stdout, stderr) => {
             if(err) {
                 console.log("Error:")
