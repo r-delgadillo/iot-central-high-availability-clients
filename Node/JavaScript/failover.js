@@ -328,9 +328,6 @@ async function setAlarmCommandHandler(msg) {
 
                     await client.close();
                 }
-                if (options.exit) {
-                    process.exit();
-                }
             }
 
             // try and cleanly exit when ctrl-c is pressed
@@ -341,22 +338,21 @@ async function setAlarmCommandHandler(msg) {
 
         } catch (e) {
             console.log(`Error: ${e}`);
-
-            await setTimeout((resolve, reject) => resolve(), 5000)
-            exec("sudo systemd-resolve --flush-caches", (err,stdout, stderr) => {
-                if(err) {
-                    console.log("Error:")
-                    console.log(err);
-                }
-                if(stdout) {
-                    console.log("Stdout:")
-                    console.log(stdout);
-                }
-                if(stderr) {
-                    console.log("Stderr:")
-                    console.log(stderr);
-                }
-            });
         }
+        await setTimeout((resolve, reject) => resolve(), 5000)
+        exec("sudo systemd-resolve --flush-caches", (err,stdout, stderr) => {
+            if(err) {
+                console.log("Error:")
+                console.log(err);
+            }
+            if(stdout) {
+                console.log("Stdout:")
+                console.log(stdout);
+            }
+            if(stderr) {
+                console.log("Stderr:")
+                console.log(stderr);
+            }
+        });
     }
 })();
