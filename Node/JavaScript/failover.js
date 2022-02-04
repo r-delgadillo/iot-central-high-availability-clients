@@ -89,7 +89,6 @@ async function messageHandler(msg) {
 // connect to IoT Central/Hub via Device Provisioning Servicee (DPS)
 async function connect() {
     try {
-        throw new Error('')
         // calc device symmetric key from group symmetric key
         const deviceSymmetricKey = computeDerivedSymmetricKey(groupSymmetricKey, deviceId);
 
@@ -309,20 +308,7 @@ async function sleep(ms) {
 function clearDns() {
     console.log('------Clear DNS');
 
-    exec("sudo systemd-resolve --flush-caches", (err,stdout, stderr) => {
-        if(err) {
-            console.log("Error:")
-            console.log(err);
-        }
-        if(stdout) {
-            console.log("Stdout:")
-            console.log(stdout);
-        }
-        if(stderr) {
-            console.log("Stderr:")
-            console.log(stderr);
-        }
-    });
+    exec("sudo systemd-resolve --flush-caches", (err,stdout, stderr) => { });
     
     console.log('------Clear DNS');
 }
