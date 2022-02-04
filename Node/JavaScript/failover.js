@@ -1,5 +1,5 @@
 'use strict';
-
+const {exec} = require('child_process');
 // Azure IoT Device SDK
 const Protocol = require('azure-iot-device-mqtt').Mqtt;
 const Client = require('azure-iot-device').Client;
@@ -291,54 +291,72 @@ async function setAlarmCommandHandler(msg) {
 
 // Connect the device and start processing telemetry, properties and commands
 (async () => {
-    try {
-        console.log('Press Ctrl-C to exit from this when running in the console');
-        console.log('DeviceId: ' + deviceId);
-        console.log('Scope: ' + scopeId);
-        console.log('Key: ' + groupSymmetricKey);
-        console.log('Provisioning Host: ' + provisioningHost);
+    while(1) { 
+        try {
+            console.log('Press Ctrl-C to exit from this when running in the console');
+            console.log('DeviceId: ' + deviceId);
+            console.log('Scope: ' + scopeId);
+            console.log('Key: ' + groupSymmetricKey);
+            console.log('Provisioning Host: ' + provisioningHost);
 
-        // connect to IoT Central/Hub via Device Provisioning Service (DPS)
-        await connect();
+            // connect to IoT Central/Hub via Device Provisioning Service (DPS)
+            await connect();
 
-        // start the interval timers to send telemetry and reported properties
-        let sendTelemetryLoop = null;
-        let sendReportedPropertiesLoop = null;
+            // start the interval timers to send telemetry and reported properties
+            let sendTelemetryLoop = null;
+            let sendReportedPropertiesLoop = null;
 
-        if (telemetrySendOn) {
-            sendTelemetryLoop = setInterval(sendTelemetry, 5000); // send telemetry every 5 seconds
-        }
-
-        if (reportedPropertySendOn) {
-            sendReportedPropertiesLoop = setInterval(sendReportedProperty, 15000);  // send reported property every 15 seconds
-        }
-
-        // exit handler for cleanup of resources
-        async function exitHandler(options, exitCode) {
-            if (options.cleanup) {
-                console.log('\nCleaning up and exiting');
-
-                if (sendTelemetryLoop !== null) {
-                    clearInterval(sendTelemetryLoop);
-                }
-                if (sendReportedPropertiesLoop !== null) {
-                    clearInterval(sendReportedPropertiesLoop);
-                }
-
-                await client.close();
+            if (telemetrySendOn) {
+                sendTelemetryLoop = setInterval(sendTelemetry, 5000); // send telemetry every 5 seconds
             }
-            if (options.exit) {
-                process.exit();
+
+            if (reportedPropertySendOn) {
+                sendReportedPropertiesLoop = setInterval(sendReportedProperty, 15000);  // send reported property every 15 seconds
             }
+
+            // exit handler for cleanup of resources
+            async function exitHandler(options, exitCode) {
+                if (options.cleanup) {
+                    console.log('\nCleaning up and exiting');
+
+                    if (sendTelemetryLoop !== null) {
+                        clearInterval(sendTelemetryLoop);
+                    }
+                    if (sendReportedPropertiesLoop !== null) {
+                        clearInterval(sendReportedPropertiesLoop);
+                    }
+
+                    await client.close();
+                }
+                if (options.exit) {
+                    process.exit();
+                }
+            }
+
+            // try and cleanly exit when ctrl-c is pressed
+            process.on('exit', exitHandler.bind(null, { cleanup: true }));
+            process.on('SIGINT', exitHandler.bind(null, { exit: true }));
+            process.on('SIGUSR1', exitHandler.bind(null, { exit: true }));
+            process.on('SIGUSR2', exitHandler.bind(null, { exit: true }));
+
+        } catch (e) {
+            console.log(`Error: ${e}`);
+
+            await setTimeout((resolve, reject) => resolve(), 5000)
+            exec("sudo systemd-resolve --flush-caches", (err,stdout, stderr) => {
+                if(err) {
+                    console.log("Error:")
+                    console.log(err);
+                }
+                if(stdout) {
+                    console.log("Stdout:")
+                    console.log(stdout);
+                }
+                if(stderr) {
+                    console.log("Stderr:")
+                    console.log(stderr);
+                }
+            });
         }
-
-        // try and cleanly exit when ctrl-c is pressed
-        process.on('exit', exitHandler.bind(null, { cleanup: true }));
-        process.on('SIGINT', exitHandler.bind(null, { exit: true }));
-        process.on('SIGUSR1', exitHandler.bind(null, { exit: true }));
-        process.on('SIGUSR2', exitHandler.bind(null, { exit: true }));
-
-    } catch (e) {
-        console.log(`Error: ${e}`);
     }
 })();
