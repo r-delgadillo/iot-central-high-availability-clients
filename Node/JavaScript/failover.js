@@ -193,7 +193,8 @@ async function sendTelemetry() {
 
         await client.sendEvent(message, (err) => {
             if (err) {
-                console.log(`Error: ${err.toString()}`);
+                console.log(`Send telemetry error: ${err.toString()}`);
+                throw err;
             }
             else {
                 console.log(`Completed telemetry send ${JSON.stringify(telemetry)}`);
@@ -211,7 +212,6 @@ async function updateDeviceProperties(properties) {
         await new Promise((resolve, reject) => {
             deviceTwin.properties.reported.update(properties, (err) => {
                 if (err) {
-                    console.log(`Error: ${err.toString()}`);
                     return reject(err);
                 }
                 else {
@@ -222,7 +222,8 @@ async function updateDeviceProperties(properties) {
         });
     }
     catch (err) {
-        console.log(`Error: ${err.message}`);
+        console.log(`Update Device Properties Error: ${err.message}`);
+        throw err;
     }
 }
 
@@ -270,9 +271,9 @@ async function echoCommandDirectMethodHandler(request, response) {
     try {
         // echos back the request payload
         await response.send(200, request.payload);
-    }
-    catch (err) {
+    } catch (err) {
         console.log(`Error in command response: ${err.message}`);
+        throw err;
     }
 }
 
@@ -282,9 +283,9 @@ async function setAlarmCommandHandler(msg) {
     try {
         // delete the message from the device queue
         await client.complete(msg);
-    }
-    catch (err) {
+    } catch (err) {
         console.log(`Error handling C2D method: ${err.message}`);
+        throw err;
     }
 }
 
