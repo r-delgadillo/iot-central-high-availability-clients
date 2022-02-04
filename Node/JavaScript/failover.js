@@ -89,6 +89,7 @@ async function messageHandler(msg) {
 // connect to IoT Central/Hub via Device Provisioning Servicee (DPS)
 async function connect() {
     try {
+        throw new Error('')
         // calc device symmetric key from group symmetric key
         const deviceSymmetricKey = computeDerivedSymmetricKey(groupSymmetricKey, deviceId);
 
@@ -289,9 +290,44 @@ async function setAlarmCommandHandler(msg) {
 }
 
 
-// Connect the device and start processing telemetry, properties and commands
-(async () => {
-    while(true) { 
+async function main() {
+    try {
+        clearDns();
+        await startDevice();        
+    } catch(e) {
+        console.log('Device connection error, attempt to reconnect in 5 seconds')
+        await sleep(5000);
+        await main();
+    }
+}
+main();
+
+async function sleep(ms) {
+    return new Promise((resolve, reject) => setTimeout(() =>resolve(), ms));
+}
+
+function clearDns() {
+    console.log('------Clear DNS');
+
+    exec("sudo systemd-resolve --flush-caches", (err,stdout, stderr) => {
+        if(err) {
+            console.log("Error:")
+            console.log(err);
+        }
+        if(stdout) {
+            console.log("Stdout:")
+            console.log(stdout);
+        }
+        if(stderr) {
+            console.log("Stderr:")
+            console.log(stderr);
+        }
+    });
+    
+    console.log('------Clear DNS');
+}
+
+async function startDevice() {
         try {
             console.log('Press Ctrl-C to exit from this when running in the console');
             console.log('DeviceId: ' + deviceId);
@@ -318,18 +354,18 @@ async function setAlarmCommandHandler(msg) {
             async function exitHandler(options, exitCode) {
                 if (options.cleanup) {
                     console.log('\nCleaning up and exiting');
-
+                    
                     if (sendTelemetryLoop !== null) {
                         clearInterval(sendTelemetryLoop);
                     }
                     if (sendReportedPropertiesLoop !== null) {
                         clearInterval(sendReportedPropertiesLoop);
                     }
-
+                    
                     await client.close();
                 }
             }
-
+            
             // try and cleanly exit when ctrl-c is pressed
             process.on('exit', exitHandler.bind(null, { cleanup: true }));
             process.on('SIGINT', exitHandler.bind(null, { exit: true }));
@@ -337,25 +373,7 @@ async function setAlarmCommandHandler(msg) {
             process.on('SIGUSR2', exitHandler.bind(null, { exit: true }));
 
         } catch (e) {
-            console.log('-------------MainThrow');
-            console.log(`Error: ${e}`);
+            console.log('Start Device Error:');
+            throw e;
         }
-        console.log('-------------Wait before retying to connect');
-        await setTimeout(() =>{}, 5000);
-        console.log('--------------Clearing cache');
-        exec("sudo systemd-resolve --flush-caches", (err,stdout, stderr) => {
-            if(err) {
-                console.log("Error:")
-                console.log(err);
-            }
-            if(stdout) {
-                console.log("Stdout:")
-                console.log(stdout);
-            }
-            if(stderr) {
-                console.log("Stderr:")
-                console.log(stderr);
-            }
-        });
-    }
-})();
+}
