@@ -291,7 +291,7 @@ async function setAlarmCommandHandler(msg) {
 
 // Connect the device and start processing telemetry, properties and commands
 (async () => {
-    while(1) { 
+    while(true) { 
         try {
             console.log('Press Ctrl-C to exit from this when running in the console');
             console.log('DeviceId: ' + deviceId);
@@ -337,9 +337,12 @@ async function setAlarmCommandHandler(msg) {
             process.on('SIGUSR2', exitHandler.bind(null, { exit: true }));
 
         } catch (e) {
+            console.log('-------------MainThrow');
             console.log(`Error: ${e}`);
         }
-        await setTimeout(() =>{}, 5000)
+        console.log('-------------Wait before retying to connect');
+        await setTimeout(() =>{}, 5000);
+        console.log('--------------Clearing cache');
         exec("sudo systemd-resolve --flush-caches", (err,stdout, stderr) => {
             if(err) {
                 console.log("Error:")
