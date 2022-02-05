@@ -350,6 +350,7 @@ async function startDevice() {
                     }
                     
                     await client.close();
+                    await main();
                 }
             }
             
