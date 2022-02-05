@@ -337,6 +337,7 @@ async function startDevice() {
         if (cient) {
             await client.close();
         }
+        client = undefined;
         await main()
     }
 }
