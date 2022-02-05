@@ -1,5 +1,5 @@
 'use strict';
-const {exec} = require('child_process');
+const { exec } = require('child_process');
 // Azure IoT Device SDK
 const Protocol = require('azure-iot-device-mqtt').Mqtt;
 const Client = require('azure-iot-device').Client;
@@ -191,14 +191,16 @@ async function sendTelemetry() {
 
         const message = new Message(JSON.stringify(telemetry));
 
-        await client.sendEvent(message, (err) => {
-            if (err) {
-                console.log(`Send telemetry error: ${err.toString()}`);
-                throw err;
-            }
-            else {
-                console.log(`Completed telemetry send ${JSON.stringify(telemetry)}`);
-            }
+       await  new Promise(async (resolve,reject) => {
+            await client.sendEvent(message, (err) => {
+                if (err) {
+                    return reject(err);
+                }
+                else {
+                    console.log(`Completed telemetry send ${JSON.stringify(telemetry)}`);
+                    return resolve();
+                }
+            });
         });
     }
 }
@@ -207,24 +209,17 @@ async function updateDeviceProperties(properties) {
     if (!deviceTwin) {
         return;
     }
-
-    try {
-        await new Promise((resolve, reject) => {
-            deviceTwin.properties.reported.update(properties, (err) => {
-                if (err) {
-                    return reject(err);
-                }
-                else {
-                    console.log(`Completed property send ${JSON.stringify(properties)}`);
-                    return resolve();
-                }
-            });
+    await new Promise((resolve, reject) => {
+        deviceTwin.properties.reported.update(properties, (err) => {
+            if (err) {
+                return reject(err);
+            }
+            else {
+                console.log(`Completed property send ${JSON.stringify(properties)}`);
+                return resolve();
+            }
         });
-    }
-    catch (err) {
-        console.log(`Update Device Properties Error: ${err.message}`);
-        throw err;
-    }
+    });
 }
 
 
@@ -271,9 +266,9 @@ async function echoCommandDirectMethodHandler(request, response) {
     try {
         // echos back the request payload
         await response.send(200, request.payload);
-    } catch (err) {
+    }
+    catch (err) {
         console.log(`Error in command response: ${err.message}`);
-        throw err;
     }
 }
 
@@ -283,9 +278,9 @@ async function setAlarmCommandHandler(msg) {
     try {
         // delete the message from the device queue
         await client.complete(msg);
-    } catch (err) {
+    }
+    catch (err) {
         console.log(`Error handling C2D method: ${err.message}`);
-        throw err;
     }
 }
 
@@ -315,53 +310,33 @@ function clearDns() {
 }
 
 async function startDevice() {
-        try {
-            console.log('Press Ctrl-C to exit from this when running in the console');
-            console.log('DeviceId: ' + deviceId);
-            console.log('Scope: ' + scopeId);
-            console.log('Key: ' + groupSymmetricKey);
-            console.log('Provisioning Host: ' + provisioningHost);
+    try {
+        console.log('Press Ctrl-C to exit from this when running in the console');
+        console.log('DeviceId: ' + deviceId);
+        console.log('Scope: ' + scopeId);
+        console.log('Key: ' + groupSymmetricKey);
+        console.log('Provisioning Host: ' + provisioningHost);
 
-            // connect to IoT Central/Hub via Device Provisioning Service (DPS)
-            await connect();
+        // connect to IoT Central/Hub via Device Provisioning Service (DPS)
+        await connect();
 
-            // start the interval timers to send telemetry and reported properties
-            let sendTelemetryLoop = null;
-            let sendReportedPropertiesLoop = null;
-
+        while(true) {
             if (telemetrySendOn) {
-                sendTelemetryLoop = setInterval(sendTelemetry, 5000); // send telemetry every 5 seconds
-            }
-
-            if (reportedPropertySendOn) {
-                sendReportedPropertiesLoop = setInterval(sendReportedProperty, 15000);  // send reported property every 15 seconds
-            }
-
-            // exit handler for cleanup of resources
-            async function exitHandler(options, exitCode) {
-                if (options.cleanup) {
-                    console.log('\nCleaning up and exiting');
-                    
-                    if (sendTelemetryLoop !== null) {
-                        clearInterval(sendTelemetryLoop);
-                    }
-                    if (sendReportedPropertiesLoop !== null) {
-                        clearInterval(sendReportedPropertiesLoop);
-                    }
-                    
-                    await client.close();
-                    await main();
-                }
+                await sendTelemetry()
             }
             
-            // try and cleanly exit when ctrl-c is pressed
-            process.on('exit', exitHandler.bind(null, { cleanup: true }));
-            process.on('SIGINT', exitHandler.bind(null, { exit: true }));
-            process.on('SIGUSR1', exitHandler.bind(null, { exit: true }));
-            process.on('SIGUSR2', exitHandler.bind(null, { exit: true }));
-
-        } catch (e) {
-            console.log('Start Device Error:');
-            throw e;
+            if (reportedPropertySendOn) {
+                await sendReportedProperty();  // send reported property every 15 seconds
+            }
+            await sleep(10000)
         }
+
+    } catch (e) {
+        console.log('Start Device Error:');
+        console.log(e);
+        if (cient) {
+            await client.close();
+        }
+        await main()
+    }
 }
