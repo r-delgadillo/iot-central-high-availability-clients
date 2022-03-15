@@ -18,12 +18,12 @@ const crypto = require('crypto');
 // const scopeId = '<Put your scope id here from IoT Central Administration -> Device connection>';
 // const groupSymmetricKey = '<Put your group SAS primary key here from IoT Central Administration -> Device Connection -> SAS-IoT-Devices>';
 const scopeId = process.argv[3];
-const deviceSymmetricKey = process.argv[4];
-const groupSymmetricKey = process.argv[5];
+const deviceKey = process.argv[5];
+const groupSymmetricKey = process.argv[6];
 
 // optional device settings - CHANGE IF DESIRED/NECESSARY
 // const provisioningHost = 'global.azure-devices-provisioning.net';
-const provisioningHost = process.argv[5] || 'global.azure-devices-provisioning.net';
+const provisioningHost = process.argv[4] || 'global.azure-devices-provisioning.net';
 const deviceId = process.argv[2] || 'failover_js';
 const modelId = 'dtmi:Sample:Failover;1';  // This model is available in the root of the Github repo (Failover.json) and can be imported into your Azure IoT central application
 
@@ -91,7 +91,7 @@ async function messageHandler(msg) {
 async function connect() {
     try {
         // calc device symmetric key from group symmetric key
-        const deviceSymmetricKey = deviceSymmetricKey || computeDerivedSymmetricKey(groupSymmetricKey, deviceId);
+        const deviceSymmetricKey = deviceKey || computeDerivedSymmetricKey(groupSymmetricKey, deviceId);
 
         // DPS provision with device symmetric key
         const provisioningSecurityClient = new SymmetricKeySecurityClient(deviceId, deviceSymmetricKey);
@@ -316,7 +316,7 @@ async function startDevice() {
         console.log('DeviceId: ' + deviceId);
         console.log('Scope: ' + scopeId);
         console.log('Group Key: ' + groupSymmetricKey);
-        console.log('Device Key: ' + deviceSymmetricKey);
+        console.log('Device Key: ' + deviceKey);
         console.log('Provisioning Host: ' + provisioningHost);
 
         // connect to IoT Central/Hub via Device Provisioning Service (DPS)
