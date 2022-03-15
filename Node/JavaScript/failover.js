@@ -18,7 +18,8 @@ const crypto = require('crypto');
 // const scopeId = '<Put your scope id here from IoT Central Administration -> Device connection>';
 // const groupSymmetricKey = '<Put your group SAS primary key here from IoT Central Administration -> Device Connection -> SAS-IoT-Devices>';
 const scopeId = process.argv[3];
-const groupSymmetricKey = process.argv[4];
+const deviceSymmetricKey = process.argv[4];
+const groupSymmetricKey = process.argv[5];
 
 // optional device settings - CHANGE IF DESIRED/NECESSARY
 // const provisioningHost = 'global.azure-devices-provisioning.net';
@@ -90,7 +91,7 @@ async function messageHandler(msg) {
 async function connect() {
     try {
         // calc device symmetric key from group symmetric key
-        const deviceSymmetricKey = computeDerivedSymmetricKey(groupSymmetricKey, deviceId);
+        const deviceSymmetricKey = deviceSymmetricKey || computeDerivedSymmetricKey(groupSymmetricKey, deviceId);
 
         // DPS provision with device symmetric key
         const provisioningSecurityClient = new SymmetricKeySecurityClient(deviceId, deviceSymmetricKey);
@@ -314,7 +315,8 @@ async function startDevice() {
         console.log('Press Ctrl-C to exit from this when running in the console');
         console.log('DeviceId: ' + deviceId);
         console.log('Scope: ' + scopeId);
-        console.log('Key: ' + groupSymmetricKey);
+        console.log('Group Key: ' + groupSymmetricKey);
+        console.log('Device Key: ' + deviceSymmetricKey);
         console.log('Provisioning Host: ' + provisioningHost);
 
         // connect to IoT Central/Hub via Device Provisioning Service (DPS)
@@ -332,12 +334,18 @@ async function startDevice() {
         }
 
     } catch (e) {
-        console.log('Start Device Error:');
-        console.log(e);
-        if (cient) {
-            await client.close();
+        try {
+            console.log('Start Device Error:');
+            console.log(e);
+            if (cient) {
+                await client.close();
+            }
+            client = undefined;
+        } catch (err) {
+            
         }
-        client = undefined;
-        await main()
+        finally{
+            await main()
+        }
     }
 }
