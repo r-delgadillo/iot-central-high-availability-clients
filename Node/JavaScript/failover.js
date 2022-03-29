@@ -192,7 +192,7 @@ async function sendTelemetry() {
 
         const message = new Message(JSON.stringify(telemetry));
 
-       await  new Promise(async (resolve,reject) => {
+        await new Promise(async (resolve,reject) => {
             await client.sendEvent(message, (err) => {
                 if (err) {
                     return reject(err);
@@ -291,7 +291,9 @@ async function main() {
         clearDns();
         await startDevice();        
     } catch(e) {
-        console.log('Device connection error, attempt to reconnect in 5 seconds')
+        console.log('Error thrown:')
+        console.log(e);
+        console.log('Attempting to reconnect in 5 seconds')
         await sleep(5000);
         await main();
     }
@@ -323,6 +325,10 @@ async function startDevice() {
         await connect();
 
         while(true) {
+            if (!connected) {
+                throw new Error('Not connected');
+            }
+
             if (telemetrySendOn) {
                 await sendTelemetry()
             }
@@ -334,18 +340,9 @@ async function startDevice() {
         }
 
     } catch (e) {
-        try {
-            console.log('Start Device Error:');
-            console.log(e);
-            if (cient) {
-                await client.close();
-            }
-            client = undefined;
-        } catch (err) {
-            
+        if (client) {
+            await client.close();
         }
-        finally{
-            await main()
-        }
+        throw e;
     }
 }
